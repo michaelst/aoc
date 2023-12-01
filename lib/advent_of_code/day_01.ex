@@ -1,6 +1,8 @@
 defmodule AdventOfCode.Day01 do
   def part1(args) do
-    Enum.reduce(args, 0, fn string, acc ->
+    args
+    |> String.split("\n", trim: true)
+    |> Enum.reduce(0, fn string, acc ->
       [first_digit | _rest] = number = get_digits(string)
       last_digit = List.last(number)
 
@@ -9,7 +11,9 @@ defmodule AdventOfCode.Day01 do
   end
 
   def part2(args) do
-    Enum.reduce(args, 0, fn string, acc ->
+    args
+    |> String.split("\n", trim: true)
+    |> Enum.reduce(0, fn string, acc ->
       codepoints = String.codepoints(string)
       first_digit = check_codepoints(codepoints)
       last_digit = codepoints |> Enum.reverse() |> check_codepoints()

@@ -46,6 +46,6 @@ defmodule AdventOfCode.Day03Test do
 
     result = part2(input)
 
-    assert result == 87605697
+    assert result == 87_605_697
   end
 end

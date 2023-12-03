@@ -44,7 +44,7 @@ defmodule AdventOfCode.Day03 do
       previous_line = Enum.at(character_list, max(index - 1, 0)) || []
       next_line = Enum.at(character_list, index + 1) || []
 
-      find_gears(characters, characters, previous_line, next_line, 0) + acc
+      find_gears(characters, characters, previous_line, next_line, "", 0) + acc
     end)
   end
 
@@ -52,27 +52,37 @@ defmodule AdventOfCode.Day03 do
     String.split(line, @symbols_and_period, trim: true)
   end
 
-  defp find_gears([symbol | rest] = remaining, full_line, previous_line, next_line, total)
+  defp find_gears(
+         [symbol | rest] = remaining,
+         full_line,
+         previous_line,
+         next_line,
+         previous_char,
+         total
+       )
        when symbol in @symbols do
     index = -length(remaining)
 
     total =
       [
-        number_before_symbol(full_line, index),
-        number_after_symbol(full_line, index),
+        number_before_symbol(full_line, index, previous_char),
+        number_after_symbol(rest),
         number_from_adjacent_line(previous_line, index),
         number_from_adjacent_line(next_line, index)
       ]
       |> List.flatten()
       |> add_gears(total)
 
-    find_gears(rest, full_line, previous_line, next_line, total)
+    # no touching symbols so we can skip next one
+    [previous_char | rest] = rest
+
+    find_gears(rest, full_line, previous_line, next_line, previous_char, total)
   end
 
-  defp find_gears([], _full_line, _previous_line, _next_line, total), do: total
+  defp find_gears([], _full_line, _previous_line, _next_line, _previous_char, total), do: total
 
-  defp find_gears([_head | rest], full_line, previous_line, next_line, total) do
-    find_gears(rest, full_line, previous_line, next_line, total)
+  defp find_gears([current_char | rest], full_line, previous_line, next_line, _previous_char, total) do
+    find_gears(rest, full_line, previous_line, next_line, current_char, total)
   end
 
   defp add_gears([first, second], total) do
@@ -81,23 +91,41 @@ defmodule AdventOfCode.Day03 do
 
   defp add_gears(_gears, total), do: total
 
-  defp number_before_symbol(line, index) do
-    chars_before_number = Enum.slice(line, (index - 3)..(index - 1)) |> IO.inspect
+  defp number_before_symbol(line, index, previous_char) when previous_char in @numbers do
+    line |> Enum.slice((index - 3)..(index - 1)) |> parse_number_before_symbol()
+  end
 
-    if List.last(chars_before_number) in @numbers do
-      chars_before_number |> Enum.join("") |> parse_numbers() |> List.last()
-    else
-      []
+  defp number_before_symbol(_line, _index, _previous_char), do: []
+
+  defp number_after_symbol([number | _rest] = after_number) when number in @numbers do
+    after_number |> Enum.slice(0..2) |> parse_number_after_symbol()
+  end
+
+  defp number_after_symbol(_after_number), do: []
+
+  defp parse_number_before_symbol([first, second, third]) do
+    cond do
+      first in @numbers and second in @numbers and third in @numbers ->
+        first <> second <> third
+
+      second in @numbers and third in @numbers ->
+        second <> third
+
+      third in @numbers ->
+        third
     end
   end
 
-  defp number_after_symbol(line, index) do
-    [next_char | _rest] = chars_after_number = Enum.slice(line, (index + 1)..(index + 3))
+  defp parse_number_after_symbol([first, second, third]) do
+    cond do
+      first in @numbers and second in @numbers and third in @numbers ->
+        first <> second <> third
 
-    if next_char in @numbers do
-      chars_after_number |> Enum.join("") |> parse_numbers() |> List.first()
-    else
-      []
+      first in @numbers and second in @numbers ->
+        first <> second
+
+      first in @numbers ->
+        first
     end
   end
 
@@ -116,27 +144,27 @@ defmodule AdventOfCode.Day03 do
 
       first in @numbers and third in @numbers ->
         before_number =
-          line |> Enum.slice((index - 4)..(index - 1)) |> Enum.join("") |> parse_numbers() |> List.last()
+          line |> Enum.slice((index - 3)..(index - 1)) |> parse_number_before_symbol()
 
         after_number =
-          line |> Enum.slice((index + 1)..(index + 3)) |> Enum.join("") |> parse_numbers() |> List.first()
+          line |> Enum.slice((index + 1)..(index + 3)) |> parse_number_after_symbol()
 
         [before_number, after_number]
 
       first in @numbers and second in @numbers ->
-        line |> Enum.slice(0..index) |> Enum.join("") |> parse_numbers() |> List.last()
+        line |> Enum.slice((index - 2)..index) |> parse_number_before_symbol()
 
       second in @numbers and third in @numbers ->
-        line |> Enum.slice(index..-1) |> Enum.join("") |> parse_numbers() |> List.first()
+        line |> Enum.slice(index..(index + 2)) |> parse_number_after_symbol()
 
       first in @numbers ->
-        line |> Enum.slice((index - 4)..(index - 1)) |> Enum.join("") |> parse_numbers() |> List.last()
+        line |> Enum.slice((index - 3)..(index - 1)) |> parse_number_before_symbol()
 
       second in @numbers ->
         second
 
       third in @numbers ->
-        line |> Enum.slice((index + 1)..(index + 3)) |> Enum.join("") |> parse_numbers() |> List.first()
+        line |> Enum.slice((index + 1)..(index + 3)) |> parse_number_after_symbol()
     end
   end
 

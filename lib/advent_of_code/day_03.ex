@@ -111,45 +111,48 @@ defmodule AdventOfCode.Day03 do
   defp number_after_symbol(_after_number), do: []
 
   defp parse_number_before_symbol([first, second, third]) do
-    cond do
-      first in @numbers and second in @numbers and third in @numbers ->
+    case {first in @numbers, second in @numbers, third in @numbers} do
+      {true, true, true} ->
         first <> second <> third
 
-      second in @numbers and third in @numbers ->
+      {_false, true, true} ->
         second <> third
 
-      third in @numbers ->
+      {_true_or_false, _false, true} ->
         third
     end
   end
 
   defp parse_number_after_symbol([first, second, third]) do
-    cond do
-      first in @numbers and second in @numbers and third in @numbers ->
+    case {first in @numbers, second in @numbers, third in @numbers} do
+      {true, true, true} ->
         first <> second <> third
 
-      first in @numbers and second in @numbers ->
+      {true, true, _false} ->
         first <> second
 
-      first in @numbers ->
+      {true, _false, _true_or_false} ->
         first
     end
   end
 
   defp number_from_adjacent_line(line, index) do
-    [first, second, third] = touching_chars = Enum.slice(line, (index - 1)..(index + 1))
+    [first, second, third] = Enum.slice(line, (index - 1)..(index + 1))
 
-    cond do
-      # all symbols
-      first in @symbols_and_period and second in @symbols_and_period and
-          third in @symbols_and_period ->
-        []
+    case {first in @numbers, second in @numbers, third in @numbers} do
+      {true, true, true} ->
+        first <> second <> third
 
-      # all numbers
-      first in @numbers and second in @numbers and third in @numbers ->
-        Enum.join(touching_chars, "")
+      {true, true, false} ->
+        line |> Enum.slice((index - 2)..index) |> parse_number_before_symbol()
 
-      first in @numbers and third in @numbers ->
+      {false, true, true} ->
+        line |> Enum.slice(index..(index + 2)) |> parse_number_after_symbol()
+
+      {false, true, false} ->
+        second
+
+      {true, false, true} ->
         before_number =
           line |> Enum.slice((index - 3)..(index - 1)) |> parse_number_before_symbol()
 
@@ -158,20 +161,14 @@ defmodule AdventOfCode.Day03 do
 
         [before_number, after_number]
 
-      first in @numbers and second in @numbers ->
-        line |> Enum.slice((index - 2)..index) |> parse_number_before_symbol()
-
-      second in @numbers and third in @numbers ->
-        line |> Enum.slice(index..(index + 2)) |> parse_number_after_symbol()
-
-      first in @numbers ->
+      {true, false, false} ->
         line |> Enum.slice((index - 3)..(index - 1)) |> parse_number_before_symbol()
 
-      second in @numbers ->
-        second
-
-      third in @numbers ->
+      {false, false, true} ->
         line |> Enum.slice((index + 1)..(index + 3)) |> parse_number_after_symbol()
+
+      {false, false, false} ->
+        []
     end
   end
 

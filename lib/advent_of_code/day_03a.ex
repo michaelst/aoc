@@ -1,6 +1,4 @@
 defmodule AdventOfCode.Day03A do
-  import AdventOfCode.Helpers
-
   @symbols ["*", "#", "-", "+", "@", "%", "&", "=", "$", "/"]
   @symbols_and_period ["." | @symbols]
   @numbers ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
@@ -11,109 +9,93 @@ defmodule AdventOfCode.Day03A do
     character_list = Enum.map(lines, &String.split(&1, "", trim: true))
     character_map = list_to_map(character_list)
 
-    lines
-    |> Enum.with_index()
-    |> Enum.reduce(0, fn {line, row}, acc ->
-      characters = String.split(line, "", trim: true) |> Enum.with_index()
+    Enum.reduce(character_map, 0, fn {row, row_map}, total ->
+      Enum.reduce(row_map, total, fn
+        {col, symbol}, row_total when symbol in @symbols ->
+          find_gears(row_map, character_map, row, col) + row_total
 
-      find_gears(characters, character_map, row, 0) + acc
+        _item, row_total ->
+          row_total
+      end)
     end)
   end
 
-  defp find_gears([], _character_map, _row, total), do: total
+  def list_to_map(list) do
+    list
+    |> Enum.with_index()
+    |> Enum.reduce(Map.new(), fn {row, y}, rows ->
+      row_values =
+        row
+        |> Enum.with_index()
+        |> Enum.reduce(Map.new(), fn {val, x}, row_acc ->
+          Map.put(row_acc, x, val)
+        end)
 
-  defp find_gears(
-         [{symbol, col} | rest],
-         character_map,
-         row,
-         total
-       )
-       when symbol in @symbols do
-    total =
-      [
-        # before symbol
-        parse_number_before_col(character_map, row, col),
-        # after symbol
-        parse_number_after_col(character_map, row, col),
-        # row before
-        number_from_adjacent_line(character_map, row - 1, col),
-        # row after
-        number_from_adjacent_line(character_map, row + 1, col)
-      ]
-      |> List.flatten()
-      |> add_gears(total)
-
-    # no touching symbols so we can skip next one
-    [_next_char | rest] = rest
-
-    find_gears(rest, character_map, row, total)
+      Map.put(rows, y, row_values)
+    end)
   end
 
-  defp find_gears(
-         [_not_symbol | rest],
-         character_map,
-         row,
-         total
-       ) do
-    find_gears(rest, character_map, row, total)
-  end
+  defp find_gears(row_map, character_map, row, col) do
+    previous_line_map = Map.get(character_map, row - 1) || Map.new()
+    next_line_map = Map.get(character_map, row + 1) || Map.new()
 
-  defp add_gears([first, second], total) do
-    String.to_integer(first) * String.to_integer(second) + total
-  end
-
-  defp add_gears(_gears, total), do: total
-
-  defp parse_number_before_col(character_map, row, col) do
-    [first, second, third] = [
-      character_map[{col - 3, row}],
-      character_map[{col - 2, row}],
-      character_map[{col - 1, row}]
+    [
+      # before symbol
+      parse_number_before_col(row_map, col),
+      # after symbol
+      parse_number_after_col(row_map, col),
+      # row before
+      number_from_adjacent_line(previous_line_map, col),
+      # row after
+      number_from_adjacent_line(next_line_map, col)
     ]
+    |> List.flatten()
+    |> Enum.reject(&(&1 == ""))
+    |> add_gears()
+  end
 
-    cond do
-      first in @numbers and second in @numbers and third in @numbers ->
-        first <> second <> third
+  defp add_gears([first, second]) do
+    String.to_integer(first) * String.to_integer(second)
+  end
 
-      second in @numbers and third in @numbers ->
-        second <> third
+  defp add_gears(_gears), do: 0
 
-      third in @numbers ->
-        third
+  defp parse_number_before_col(row_map, col, acc \\ [])
 
-      true ->
-        []
+  defp parse_number_before_col(_row_map, _col, [first, second, third]) do
+    first <> second <> third
+  end
+
+  defp parse_number_before_col(row_map, col, acc) do
+    case Map.get(row_map, col - 1) do
+      value when value in @numbers ->
+        parse_number_before_col(row_map, col - 1, [value | acc])
+
+      _value ->
+        Enum.join(acc)
     end
   end
 
-  defp parse_number_after_col(character_map, row, col) do
-    [first, second, third] = [
-      character_map[{col + 1, row}],
-      character_map[{col + 2, row}],
-      character_map[{col + 3, row}]
-    ]
+  defp parse_number_after_col(row_map, col, acc \\ [])
 
-    cond do
-      first in @numbers and second in @numbers and third in @numbers ->
-        first <> second <> third
+  defp parse_number_after_col(_row_map, _col, [first, second, third]) do
+    first <> second <> third
+  end
 
-      first in @numbers and second in @numbers ->
-        first <> second
+  defp parse_number_after_col(row_map, col, acc) do
+    case Map.get(row_map, col + 1) do
+      value when value in @numbers ->
+        parse_number_after_col(row_map, col + 1, acc ++ [value])
 
-      first in @numbers ->
-        first
-
-      true ->
-        []
+      _value ->
+        Enum.join(acc)
     end
   end
 
-  defp number_from_adjacent_line(character_map, row, col) do
-    [first, second, third] = [
-      character_map[{col - 1, row}],
-      character_map[{col, row}],
-      character_map[{col + 1, row}]
-    ]
+  defp number_from_adjacent_line(row_map, col) do
+    first = Map.get(row_map, col - 1)
+    second = Map.get(row_map, col)
+    third = Map.get(row_map, col + 1)
 
     cond do
       # all symbols
@@ -126,25 +108,25 @@ defmodule AdventOfCode.Day03A do
         first <> second <> third
 
       first in @numbers and third in @numbers ->
-        before_number = parse_number_before_col(character_map, row, col)
-        after_number = parse_number_after_col(character_map, row, col)
+        before_number = parse_number_before_col(row_map, col)
+        after_number = parse_number_after_col(row_map, col)
 
         [before_number, after_number]
 
       first in @numbers and second in @numbers ->
-        parse_number_before_col(character_map, row, col + 1)
+        parse_number_before_col(row_map, col + 1)
 
       second in @numbers and third in @numbers ->
-        parse_number_after_col(character_map, row, col - 1)
+        parse_number_after_col(row_map, col - 1)
 
       first in @numbers ->
-        parse_number_before_col(character_map, row, col)
+        parse_number_before_col(row_map, col)
 
       second in @numbers ->
         second
 
       third in @numbers ->
-        parse_number_after_col(character_map, row, col)
+        parse_number_after_col(row_map, col)
     end
   end
 end

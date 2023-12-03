@@ -81,7 +81,14 @@ defmodule AdventOfCode.Day03 do
 
   defp find_gears([], _full_line, _previous_line, _next_line, _previous_char, total), do: total
 
-  defp find_gears([current_char | rest], full_line, previous_line, next_line, _previous_char, total) do
+  defp find_gears(
+         [current_char | rest],
+         full_line,
+         previous_line,
+         next_line,
+         _previous_char,
+         total
+       ) do
     find_gears(rest, full_line, previous_line, next_line, current_char, total)
   end
 

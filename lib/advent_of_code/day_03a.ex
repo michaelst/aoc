@@ -1,6 +1,5 @@
 defmodule AdventOfCode.Day03A do
   @symbols ["*", "#", "-", "+", "@", "%", "&", "=", "$", "/"]
-  @symbols_and_period ["." | @symbols]
   @numbers ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
 
   def part2(args) do
@@ -93,40 +92,42 @@ defmodule AdventOfCode.Day03A do
   end
 
   defp number_from_adjacent_line(row_map, col) do
-    first = Map.get(row_map, col - 1)
-    second = Map.get(row_map, col)
-    third = Map.get(row_map, col + 1)
+    col_minus_one = col - 1
+    col_plus_one = col + 1
 
-    cond do
-      # all symbols
-      first in @symbols_and_period and second in @symbols_and_period and
-          third in @symbols_and_period ->
-        []
+    %{
+      ^col_minus_one => first,
+      ^col => second,
+      ^col_plus_one => third
+    } = row_map
 
-      # all numbers
-      first in @numbers and second in @numbers and third in @numbers ->
+    case {first in @numbers, second in @numbers, third in @numbers} do
+      {true, true, true} ->
         first <> second <> third
 
-      first in @numbers and third in @numbers ->
+      {true, true, false} ->
+        parse_number_before_col(row_map, col + 1)
+
+      {false, true, true} ->
+        parse_number_after_col(row_map, col - 1)
+
+      {false, true, false} ->
+        second
+
+      {true, false, true} ->
         before_number = parse_number_before_col(row_map, col)
         after_number = parse_number_after_col(row_map, col)
 
         [before_number, after_number]
 
-      first in @numbers and second in @numbers ->
-        parse_number_before_col(row_map, col + 1)
-
-      second in @numbers and third in @numbers ->
-        parse_number_after_col(row_map, col - 1)
-
-      first in @numbers ->
+      {true, false, false} ->
         parse_number_before_col(row_map, col)
 
-      second in @numbers ->
-        second
-
-      third in @numbers ->
+      {false, false, true} ->
         parse_number_after_col(row_map, col)
+
+      {false, false, false} ->
+        []
     end
   end
 end

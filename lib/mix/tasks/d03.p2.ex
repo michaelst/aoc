@@ -1,17 +1,22 @@
 defmodule Mix.Tasks.D03.P2 do
   use Mix.Task
 
-  import AdventOfCode.Day03
+  alias AdventOfCode.Day03
+  alias AdventOfCode.Day03A
 
   @shortdoc "Day 03 Part 2"
   def run(args) do
     input = File.read!("input/day03")
 
     if Enum.member?(args, "-b"),
-      do: Benchee.run(%{part_2: fn -> input |> part2() end}),
+      do:
+        Benchee.run(%{
+          part_2: fn -> input |> Day03.part2() end,
+          part_2_a: fn -> input |> Day03A.part2() end
+        }),
       else:
         input
-        |> part2()
+        |> Day03.part2()
         |> IO.inspect(label: "Part 2 Results")
   end
 end

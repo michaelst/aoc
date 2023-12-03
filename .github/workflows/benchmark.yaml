@@ -19,7 +19,7 @@ jobs:
         run: mix do deps.get, compile
 
       - name: Benchmark Part 1
-        run: mix d02.p1 -b
+        run: mix d03.p1 -b
 
       - name: Benchmark Part 2
-        run: mix d02.p2 -b
+        run: mix d03.p2 -b

@@ -24,7 +24,6 @@ defmodule AdventOfCode.Day03Test do
     assert result == 4981
   end
 
-  @tag :skip
   test "part2" do
     input = """
     467..114..
@@ -41,6 +40,12 @@ defmodule AdventOfCode.Day03Test do
 
     result = part2(input)
 
-    assert result == 467835
+    assert result == 467_835
+
+    input = File.read!("input/day03")
+
+    result = part2(input)
+
+    assert result == 87605697
   end
 end

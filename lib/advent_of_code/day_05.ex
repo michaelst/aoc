@@ -16,6 +16,8 @@ defmodule AdventOfCode.Day05 do
 
     {seed_start, _seed_end} =
       seeds
+      |> String.split([" ", "\n"], trim: true)
+      |> Enum.map(&String.to_integer/1)
       |> seed_ranges()
       |> filter_ranges(all_conversions)
       |> Enum.min_by(fn {start, _end} -> start end)
@@ -23,13 +25,11 @@ defmodule AdventOfCode.Day05 do
     seed_start
   end
 
-  defp seed_ranges(seeds) do
-    String.split(seeds, [" ", "\n"], trim: true)
-    |> Enum.map(&String.to_integer/1)
-    |> Enum.chunk_every(2)
-    |> Enum.map(fn [start, size] ->
-      {start, start + size - 1}
-    end)
+  defp seed_ranges(seeds, ranges \\ [])
+  defp seed_ranges([], ranges), do: ranges
+
+  defp seed_ranges([start, size | rest], ranges) do
+    seed_ranges(rest, [{start, start + size - 1} | ranges])
   end
 
   defp all_conversions(conversions) do
@@ -37,6 +37,7 @@ defmodule AdventOfCode.Day05 do
       String.split(conversion, "\n", trim: true)
       |> Enum.map(&String.split(&1, " ", trim: true))
       |> build_ranges()
+      |> Enum.sort_by(fn {start, _end, _difference} -> start end)
     end)
   end
 
@@ -67,11 +68,8 @@ defmodule AdventOfCode.Day05 do
         [{seed_start, seed_end, 0}]
 
       valid ->
-        {min, _, _} =
-          Enum.min_by(valid, fn {source_start, _source_end, _difference} -> source_start end)
-
-        {_, max, _} =
-          Enum.max_by(valid, fn {_source_start, source_end, _difference} -> source_end end)
+        {min, _, _} = hd(valid)
+        {_, max, _} = List.last(valid)
 
         case {min, max} do
           {min, max} when min <= seed_start and max >= seed_end -> valid

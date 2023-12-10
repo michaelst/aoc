@@ -78,13 +78,14 @@ defmodule AdventOfCode.Day10 do
 
   def in_loop?({x, y}, full_loop, grid) do
     left_line = Enum.map(0..(x - 1), fn nx -> {nx, y} end) |> MapSet.new()
-    right_line = Enum.map((x + 1)..139, fn nx -> {nx, y} end) |> MapSet.new()
 
     with true <-
            MapSet.intersection(full_loop, left_line)
            |> Enum.map(&Map.get(grid, &1))
            |> Enum.count(&(&1 in ["|", "L", "J"]))
            |> Integer.is_odd() do
+      right_line = Enum.map((x + 1)..139, fn nx -> {nx, y} end) |> MapSet.new()
+
       MapSet.intersection(full_loop, right_line)
       |> Enum.map(&Map.get(grid, &1))
       |> Enum.count(&(&1 in ["|", "L", "J"]))

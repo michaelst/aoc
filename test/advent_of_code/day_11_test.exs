@@ -3,19 +3,74 @@ defmodule AdventOfCode.Day11Test do
 
   import AdventOfCode.Day11
 
-  @tag :skip
   test "part1" do
-    input = nil
+    input = """
+    ...#......
+    .......#..
+    #.........
+    ..........
+    ......#...
+    .#........
+    .........#
+    ..........
+    .......#..
+    #...#.....
+    """
+
     result = part1(input)
 
-    assert result
+    assert result == 374
   end
 
-  @tag :skip
-  test "part2" do
-    input = nil
-    result = part2(input)
+  test "expand galaxy" do
+    input = """
+    ...#......
+    .......#..
+    #.........
+    ..........
+    ......#...
+    .#........
+    .........#
+    ..........
+    .......#..
+    #...#.....
+    """
 
-    assert result
+    result = expand_galaxy(input, 2)
+
+    assert result == [
+             {0, {4, 0}},
+             {1, {9, 1}},
+             {2, {0, 2}},
+             {3, {8, 5}},
+             {4, {1, 6}},
+             {5, {12, 7}},
+             {6, {9, 10}},
+             {7, {0, 11}},
+             {8, {5, 11}}
+           ]
+  end
+
+  test "part2" do
+    input = """
+    ...#......
+    .......#..
+    #.........
+    ..........
+    ......#...
+    .#........
+    .........#
+    ..........
+    .......#..
+    #...#.....
+    """
+
+    result = part2(input, 10)
+
+    assert result == 1030
+
+    result = part2(input, 100)
+
+    assert result == 8410
   end
 end

@@ -3,19 +3,63 @@ defmodule AdventOfCode.Day13Test do
 
   import AdventOfCode.Day13
 
-  @tag :skip
   test "part1" do
-    input = nil
+    input = """
+    #.##..##.
+    ..#.##.#.
+    ##......#
+    ##......#
+    ..#.##.#.
+    ..##..##.
+    #.#.##.#.
+
+    #...##..#
+    #....#..#
+    ..##..###
+    #####.##.
+    #####.##.
+    ..##..###
+    #....#..#
+    """
+
     result = part1(input)
 
-    assert result
+    assert result == 405
+
+    input = File.read!("input/day13")
+
+    result = part1(input)
+
+    assert result == 27202
   end
 
-  @tag :skip
   test "part2" do
-    input = nil
+    input = """
+    #.##..##.
+    ..#.##.#.
+    ##......#
+    ##......#
+    ..#.##.#.
+    ..##..##.
+    #.#.##.#.
+
+    #...##..#
+    #....#..#
+    ..##..###
+    #####.##.
+    #####.##.
+    ..##..###
+    #....#..#
+    """
+
     result = part2(input)
 
-    assert result
+    assert result == 400
+
+    input = File.read!("input/day13")
+
+    result = part2(input)
+
+    assert result == 41566
   end
 end

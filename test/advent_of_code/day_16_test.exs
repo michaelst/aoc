@@ -3,19 +3,23 @@ defmodule AdventOfCode.Day16Test do
 
   import AdventOfCode.Day16
 
-  @tag :skip
   test "part1" do
-    input = nil
+    input = File.read!("input/day16_test")
+
     result = part1(input)
 
-    assert result
+    assert result == 46
   end
 
-  @tag :skip
   test "part2" do
-    input = nil
+    input = File.read!("input/day16_test")
     result = part2(input)
 
-    assert result
+    assert result == 51
+
+    input = File.read!("input/day16")
+    result = part2(input)
+
+    assert result == 8318
   end
 end
